@@ -148,7 +148,7 @@ class _ShopHomeState extends State<ShopHome> {
                 child: ListView.builder(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  itemCount: valueOffer.length,
+                  itemCount: offer2.length,
                   itemBuilder: (context, index) {
                     return Offer2(
                       pic: offer2[index]["image"],
