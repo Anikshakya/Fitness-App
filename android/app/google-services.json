@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "520520009383",
+    "project_id": "fitnessghar-a3f00",
+    "storage_bucket": "fitnessghar-a3f00.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:520520009383:android:e04f86170872894311fd82",
+        "android_client_info": {
+          "package_name": "com.example.fitness"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "520520009383-gdrgiljvf4pn5a3aoh2ohoi288bclm38.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3oxDIA3ZmPbOTF5hGprtvp0o_9gEmeDQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "520520009383-gdrgiljvf4pn5a3aoh2ohoi288bclm38.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
