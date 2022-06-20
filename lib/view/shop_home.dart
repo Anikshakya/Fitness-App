@@ -1,8 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:fitness/all_data/shop_data.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fitness/services.dart/analytics_service.dart';
 import 'package:fitness/view/order_page.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ShopHome extends StatefulWidget {
   const ShopHome({Key? key}) : super(key: key);
@@ -12,15 +14,27 @@ class ShopHome extends StatefulWidget {
 }
 
 class _ShopHomeState extends State<ShopHome> {
+  //----analytics----
+  Future<void> _currentScreen() async {
+    AnalyticsService.analytics.setCurrentScreen(screenName: "ShopingSection");
+  }
+
+  @override
+  void initState() {
+    _currentScreen();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
             //-----Catagories-----
-            padding: const EdgeInsets.all(10),
+            // padding: const EdgeInsets.all(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -76,166 +90,235 @@ class _ShopHomeState extends State<ShopHome> {
             height: 10,
           ),
           //-----first tile-----
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  "Value Offer",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              SizedBox(
-                height: 260,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: valueOffer.length,
-                  itemBuilder: (context, index) {
-                    return ShopTile(
-                      pic: valueOffer[index]["image"],
-                      brandName:
-                          valueOffer[index]["brand"].toString().toUpperCase(),
-                      itemName: valueOffer[index]["item_name"].toString(),
-                      ratings: valueOffer[index]["ratings"].toString(),
-                      price: valueOffer[index]["price"],
-                      prevPrice: valueOffer[index]["prev_price"],
-                      ontap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: ((context) {
-                              return OrderPage(
-                                brand: valueOffer[index]["brand"],
-                                name: valueOffer[index]["item_name"],
-                                pic: valueOffer[index]["image"],
-                                ratings: valueOffer[index]["ratings"],
-                                price: valueOffer[index]["price"],
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection("shopItems")
+                .orderBy("item_name", descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Text("No data found....");
+              } else {
+                List<QueryDocumentSnapshot<Object?>> fireStoreValueOffer =
+                    snapshot.data!.docs;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Text(
+                        "Value Offer",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    SizedBox(
+                      height: 260,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: fireStoreValueOffer.length,
+                        itemBuilder: (context, index) {
+                          return ShopTile(
+                            pic: fireStoreValueOffer[index]["image"],
+                            brandName: fireStoreValueOffer[index]["brand"]
+                                .toString()
+                                .toUpperCase(),
+                            itemName: fireStoreValueOffer[index]["item_name"]
+                                .toString(),
+                            ratings: fireStoreValueOffer[index]["ratings"]
+                                .toString(),
+                            price: fireStoreValueOffer[index]["price"],
+                            prevPrice: fireStoreValueOffer[index]["prev_price"],
+                            ontap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: ((context) {
+                                    return OrderPage(
+                                      brand: fireStoreValueOffer[index]
+                                          ["brand"],
+                                      name: fireStoreValueOffer[index]
+                                          ["item_name"],
+                                      pic: fireStoreValueOffer[index]["image"],
+                                      ratings: fireStoreValueOffer[index]
+                                          ["ratings"],
+                                      price: fireStoreValueOffer[index]
+                                          ["price"],
+                                      delivery_fee: fireStoreValueOffer[index]
+                                          ["delivery_fee"],
+                                    );
+                                  }),
+                                ),
                               );
-                            }),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
           //-----Second  Tile--------
           SizedBox(
             height: 20,
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  "World Cup Offer",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              SizedBox(
-                height: 260,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: offer2.length,
-                  itemBuilder: (context, index) {
-                    return Offer2(
-                      pic: offer2[index]["image"],
-                      brandName:
-                          offer2[index]["brand"].toString().toUpperCase(),
-                      itemName: offer2[index]["item_name"].toString(),
-                      ratings: offer2[index]["ratings"].toString(),
-                      price: offer2[index]["price"],
-                      prevPrice: offer2[index]["prev_price"],
-                      ontap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: ((context) {
-                              return OrderPage(
-                                brand: offer2[index]["brand"],
-                                name: offer2[index]["item_name"],
-                                pic: offer2[index]["image"],
-                                ratings: offer2[index]["ratings"],
-                                price: offer2[index]["price"],
-                              );
-                            }),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+          StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("offers")
+                  .orderBy("item_name", descending: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text("No data found....");
+                } else {
+                  List<QueryDocumentSnapshot<Object?>> fireStoreShopOffer =
+                      snapshot.data!.docs;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 10),
+                        child: Text(
+                          "World Cup Offer",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      SizedBox(
+                        height: 260,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: fireStoreShopOffer.length,
+                          itemBuilder: (context, index) {
+                            return Offer2(
+                              pic: fireStoreShopOffer[index]["image"],
+                              brandName: fireStoreShopOffer[index]["brand"]
+                                  .toString()
+                                  .toUpperCase(),
+                              itemName: fireStoreShopOffer[index]["item_name"]
+                                  .toString(),
+                              ratings: fireStoreShopOffer[index]["ratings"]
+                                  .toString(),
+                              price: fireStoreShopOffer[index]["price"],
+                              prevPrice: fireStoreShopOffer[index]
+                                  ["prev_price"],
+                              ontap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: ((context) {
+                                      return OrderPage(
+                                        brand: fireStoreShopOffer[index]
+                                            ["brand"],
+                                        name: fireStoreShopOffer[index]
+                                            ["item_name"],
+                                        pic: fireStoreShopOffer[index]["image"],
+                                        ratings: fireStoreShopOffer[index]
+                                            ["ratings"],
+                                        price: fireStoreShopOffer[index]
+                                            ["price"],
+                                        delivery_fee: fireStoreShopOffer[index]
+                                            ["delivery_fee"],
+                                      );
+                                    }),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              }),
           //-----third tile-----
           SizedBox(
             height: 30,
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  "More for You",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              SizedBox(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.vertical,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: shopHomeData.length,
-                  itemBuilder: (context, index) {
-                    return VerticalTile(
-                      pic: shopHomeData[index]["image"],
-                      brandName:
-                          shopHomeData[index]["brand"].toString().toUpperCase(),
-                      itemName: shopHomeData[index]["item_name"].toString(),
-                      ratings: shopHomeData[index]["ratings"].toString(),
-                      price: shopHomeData[index]["price"],
-                      prevPrice: shopHomeData[index]["prev_price"],
-                      ontap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: ((context) {
-                              return OrderPage(
-                                brand: shopHomeData[index]["brand"],
-                                name: shopHomeData[index]["item_name"],
-                                pic: shopHomeData[index]["image"],
-                                ratings: shopHomeData[index]["ratings"],
-                                price: shopHomeData[index]["price"],
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection("shopItems")
+                .orderBy("item_name", descending: false)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Text("No data found....");
+              } else {
+                List<QueryDocumentSnapshot<Object?>> fireStoreShopItems =
+                    snapshot.data!.docs;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Text(
+                        "More for You",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: fireStoreShopItems.length,
+                        itemBuilder: (context, index) {
+                          return VerticalTile(
+                            pic: fireStoreShopItems[index]["image"],
+                            brandName: fireStoreShopItems[index]["brand"]
+                                .toString()
+                                .toUpperCase(),
+                            itemName: fireStoreShopItems[index]["item_name"]
+                                .toString(),
+                            ratings:
+                                fireStoreShopItems[index]["ratings"].toString(),
+                            price: fireStoreShopItems[index]["price"],
+                            prevPrice: fireStoreShopItems[index]["prev_price"],
+                            ontap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: ((context) {
+                                    return OrderPage(
+                                      brand: fireStoreShopItems[index]["brand"],
+                                      name: fireStoreShopItems[index]
+                                          ["item_name"],
+                                      pic: fireStoreShopItems[index]["image"],
+                                      ratings: fireStoreShopItems[index]
+                                          ["ratings"],
+                                      price: fireStoreShopItems[index]["price"],
+                                      delivery_fee: fireStoreShopItems[index]
+                                          ["delivery_fee"],
+                                    );
+                                  }),
+                                ),
                               );
-                            }),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),
@@ -298,8 +381,8 @@ class ShopTile extends StatelessWidget {
                     topLeft: Radius.circular(8),
                     topRight: Radius.circular(8),
                   ),
-                  child: Image.asset(
-                    pic!,
+                  child: CachedNetworkImage(
+                    imageUrl: pic!,
                     fit: BoxFit.cover,
                     height: 150,
                     width: 250,
@@ -474,8 +557,8 @@ class _Offer2State extends State<Offer2> {
                         topLeft: Radius.circular(8),
                         topRight: Radius.circular(8),
                       ),
-                      child: Image.asset(
-                        widget.pic!,
+                      child: CachedNetworkImage(
+                        imageUrl: widget.pic!,
                         fit: BoxFit.cover,
                         height: 150,
                         width: 250,
@@ -686,8 +769,8 @@ class _VerticalTileState extends State<VerticalTile> {
                     topLeft: Radius.circular(8),
                     topRight: Radius.circular(8),
                   ),
-                  child: Image.asset(
-                    widget.pic!,
+                  child: CachedNetworkImage(
+                    imageUrl: widget.pic!,
                     fit: BoxFit.cover,
                     height: 240,
                     width: MediaQuery.of(context).size.width,

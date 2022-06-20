@@ -1,6 +1,7 @@
 import 'package:fitness/view/fitness_centers_details.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../all_data/shop_data.dart';
 
 class FitnessCenters extends StatefulWidget {
   const FitnessCenters({Key? key}) : super(key: key);
@@ -144,6 +145,7 @@ class _FitnessCentersState extends State<FitnessCenters> {
 
             //-----Equipment Stores----
             Container(
+              width: double.infinity,
               height: 338,
               margin: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
@@ -159,56 +161,76 @@ class _FitnessCentersState extends State<FitnessCenters> {
               ),
               child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FitnessCenterDetails(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 10, top: 15, bottom: 15),
+                        child: Text(
+                          "Equipment Stores",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600),
                         ),
-                      );
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding:
-                              EdgeInsets.only(left: 10, top: 15, bottom: 15),
-                          child: Text(
-                            "Equipment Stores",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 274,
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: equipmentStores.length,
-                            itemBuilder: (context, index) {
-                              return EquipmentStoreListTile(
-                                pic: equipmentStores[index]["image"],
-                                name: equipmentStores[index]["name"]
-                                    .toString()
-                                    .toUpperCase(),
-                                location: equipmentStores[index]["location"]
-                                    .toString(),
-                                ratings: equipmentStores[index]["ratings"]
-                                    .toString(),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("equipmentStores")
+                            .orderBy("name", descending: false)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Text("No data found....");
+                          } else {
+                            List<QueryDocumentSnapshot<Object?>>
+                                fireStoreItems = snapshot.data!.docs;
+                            return SizedBox(
+                              height: 274,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: fireStoreItems.length,
+                                itemBuilder: (context, index) {
+                                  return EquipmentStoreListTile(
+                                    pic: fireStoreItems[index]["image"],
+                                    name: fireStoreItems[index]["name"]
+                                        .toString()
+                                        .toUpperCase(),
+                                    location: fireStoreItems[index]["location"]
+                                        .toString(),
+                                    ratings: fireStoreItems[index]["ratings"]
+                                        .toString(),
+                                    ontap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              FitnessCenterDetails(
+                                            pic: fireStoreItems[index]["image"],
+                                            name: fireStoreItems[index]["name"],
+                                            location: fireStoreItems[index]
+                                                ["location"],
+                                            ratings: fireStoreItems[index]
+                                                ["ratings"],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            //-----Workout Centers-----
+            //-----Fitness Centers-----
             Container(
               height: 338,
+              width: double.infinity,
               margin: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(0),
@@ -223,52 +245,68 @@ class _FitnessCentersState extends State<FitnessCenters> {
               ),
               child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FitnessCenterDetails(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 10, top: 15, bottom: 15),
+                        child: Text(
+                          "Fitness Center",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600),
                         ),
-                      );
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding:
-                              EdgeInsets.only(left: 10, top: 15, bottom: 15),
-                          child: Text(
-                            "Workout Centers",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        // SizedBox(
-                        //   height: 5,
-                        // ),
-                        SizedBox(
-                          height: 270,
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: workoutCenters.length,
-                            itemBuilder: (context, index) {
-                              return FitnessCenterListTile(
-                                pic: workoutCenters[index]["image"],
-                                name: workoutCenters[index]["name"]
-                                    .toString()
-                                    .toUpperCase(),
-                                location: workoutCenters[index]["location"]
-                                    .toString(),
-                                ratings:
-                                    workoutCenters[index]["ratings"].toString(),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("fitnessCenters")
+                            .orderBy("name", descending: true)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Text("No data found....");
+                          } else {
+                            List<QueryDocumentSnapshot<Object?>>
+                                fireStoreItems = snapshot.data!.docs;
+                            return SizedBox(
+                              height: 274,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: fireStoreItems.length,
+                                itemBuilder: (context, index) {
+                                  return FitnessCenterListTile(
+                                    pic: fireStoreItems[index]["image"],
+                                    name: fireStoreItems[index]["name"]
+                                        .toString()
+                                        .toUpperCase(),
+                                    location: fireStoreItems[index]["location"]
+                                        .toString(),
+                                    ratings: fireStoreItems[index]["ratings"]
+                                        .toString(),
+                                    ontap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              FitnessCenterDetails(
+                                            pic: fireStoreItems[index]["image"],
+                                            name: fireStoreItems[index]["name"],
+                                            location: fireStoreItems[index]
+                                                ["location"],
+                                            ratings: fireStoreItems[index]
+                                                ["ratings"],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -282,12 +320,14 @@ class _FitnessCentersState extends State<FitnessCenters> {
 
 class FitnessCenterListTile extends StatefulWidget {
   final String? pic, name, location, ratings;
+  final VoidCallback ontap;
   const FitnessCenterListTile({
     Key? key,
     this.name,
     this.location,
     this.pic,
     this.ratings,
+    required this.ontap,
   }) : super(key: key);
 
   @override
@@ -311,83 +351,86 @@ class _FitnessCenterListTileState extends State<FitnessCenterListTile> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.only(left: 20, bottom: 7),
-      decoration: boderRaduisShadow(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(2),
-              topRight: Radius.circular(2),
-            ),
-            child: Image.asset(
-              widget.pic!,
-              fit: BoxFit.cover,
-              height: 160,
-              width: 300,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 15, top: 12),
-            child: Text(
-              widget.name!,
-              style: const TextStyle(
-                color: Color.fromARGB(255, 39, 39, 39),
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+    return GestureDetector(
+      onTap: widget.ontap,
+      child: Container(
+        margin: const EdgeInsets.only(left: 10, bottom: 7, right: 10),
+        decoration: boderRaduisShadow(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(2),
+                topRight: Radius.circular(2),
+              ),
+              child: CachedNetworkImage(
+                imageUrl: widget.pic!,
+                fit: BoxFit.cover,
+                height: 160,
+                width: 300,
               ),
             ),
-          ),
-          const SizedBox(
-            height: 5,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Row(
+            Padding(
+              padding: const EdgeInsets.only(left: 15, top: 12),
+              child: Text(
+                widget.name!,
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 39, 39, 39),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Colors.teal,
+                    size: 15,
+                  ),
+                  Text(
+                    widget.location!,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      // fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            Row(
               children: [
+                const SizedBox(
+                  width: 12,
+                ),
                 const Icon(
-                  Icons.location_on,
-                  color: Colors.teal,
-                  size: 15,
+                  Icons.star,
+                  color: Color.fromARGB(255, 255, 209, 59),
+                  size: 18,
+                ),
+                const SizedBox(
+                  width: 5,
                 ),
                 Text(
-                  widget.location!,
+                  widget.ratings!,
                   style: const TextStyle(
-                    color: Colors.black,
-                    // fontWeight: FontWeight.w500,
-                    fontSize: 15,
+                    color: Colors.teal,
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Row(
-            children: [
-              const SizedBox(
-                width: 12,
-              ),
-              const Icon(
-                Icons.star,
-                color: Color.fromARGB(255, 255, 209, 59),
-                size: 18,
-              ),
-              const SizedBox(
-                width: 5,
-              ),
-              Text(
-                widget.ratings!,
-                style: const TextStyle(
-                  color: Colors.teal,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -395,9 +438,11 @@ class _FitnessCenterListTileState extends State<FitnessCenterListTile> {
 
 class EquipmentStoreListTile extends StatefulWidget {
   final String? pic, name, location, ratings;
+  final VoidCallback ontap;
   const EquipmentStoreListTile({
     Key? key,
     this.name,
+    required this.ontap,
     this.location,
     this.pic,
     this.ratings,
@@ -424,83 +469,90 @@ class _EquipmentStoreListTileState extends State<EquipmentStoreListTile> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.only(left: 15, bottom: 7),
-      decoration: boderRaduisShadow(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(2),
-              topRight: Radius.circular(2),
-            ),
-            child: Image.asset(
-              widget.pic!,
-              fit: BoxFit.cover,
-              height: 160,
-              width: 300,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 15, top: 12),
-            child: Text(
-              widget.name!,
-              style: const TextStyle(
-                color: Color.fromARGB(255, 39, 39, 39),
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+    return GestureDetector(
+      onTap: widget.ontap,
+      child: Container(
+        margin: const EdgeInsets.only(left: 10, bottom: 7, right: 10),
+        decoration: boderRaduisShadow(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(2),
+                topRight: Radius.circular(2),
+              ),
+              child: CachedNetworkImage(
+                imageUrl: widget.pic!,
+                fit: BoxFit.cover,
+                height: 160,
+                width: 300,
               ),
             ),
-          ),
-          const SizedBox(
-            height: 5,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Row(
+            Padding(
+              padding: const EdgeInsets.only(left: 15, top: 12),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: Text(
+                  widget.name!,
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 39, 39, 39),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                  maxLines: 2,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Colors.teal,
+                    size: 15,
+                  ),
+                  Text(
+                    widget.location!,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      // fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            Row(
               children: [
+                const SizedBox(
+                  width: 12,
+                ),
                 const Icon(
-                  Icons.location_on,
-                  color: Colors.teal,
-                  size: 15,
+                  Icons.star,
+                  color: Color.fromARGB(255, 255, 209, 59),
+                  size: 18,
+                ),
+                const SizedBox(
+                  width: 5,
                 ),
                 Text(
-                  widget.location!,
+                  widget.ratings!,
                   style: const TextStyle(
-                    color: Colors.black,
-                    // fontWeight: FontWeight.w500,
-                    fontSize: 15,
+                    color: Colors.teal,
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Row(
-            children: [
-              const SizedBox(
-                width: 12,
-              ),
-              const Icon(
-                Icons.star,
-                color: Color.fromARGB(255, 255, 209, 59),
-                size: 18,
-              ),
-              const SizedBox(
-                width: 5,
-              ),
-              Text(
-                widget.ratings!,
-                style: const TextStyle(
-                  color: Colors.teal,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

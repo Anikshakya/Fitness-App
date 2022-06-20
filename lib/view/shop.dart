@@ -1,6 +1,10 @@
+import 'package:fitness/services.dart/analytics_service.dart';
+import 'package:fitness/view/cart.dart';
 import 'package:fitness/view/fitness_centers.dart';
+import 'package:fitness/view/search_page.dart';
 import 'package:fitness/view/shop_home.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Shop extends StatefulWidget {
   const Shop({Key? key}) : super(key: key);
@@ -10,6 +14,20 @@ class Shop extends StatefulWidget {
 }
 
 class _ShopState extends State<Shop> {
+  var user = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    _currentScreenAnalytics();
+    super.initState();
+  }
+
+  //-----analytics-----
+  Future _currentScreenAnalytics() async {
+    await AnalyticsService.analytics
+        .setCurrentScreen(screenName: "shop_screen");
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -24,50 +42,74 @@ class _ShopState extends State<Shop> {
               color: Colors.black,
             ),
           ),
-          title: GestureDetector(
-            onTap: () {},
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 216, 216, 216),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.all(5),
+          title: const Text(
+            "SHOP/ FITNESS CENTERS",
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 15.8,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(left: 6, right: 6),
               child: Row(
-                children: const [
-                  Icon(
-                    Icons.search,
-                    color: Colors.black,
-                  ),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Text(
-                    "Shop / Fitness Ceners",
-                    style: TextStyle(
-                      fontSize: 15,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SearchPage()));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 230, 230, 230),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.search,
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.location_on_outlined,
-                color: Colors.black,
-              ),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.shopping_cart_outlined,
-                color: Colors.black,
+            Padding(
+              padding: const EdgeInsets.only(left: 6, right: 12),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Cart()));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 230, 230, 230),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.shopping_cart_outlined,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
           bottom: const TabBar(
+            indicatorColor: Colors.teal,
             tabs: [
               Padding(
                 padding: EdgeInsets.all(8.0),

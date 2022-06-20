@@ -18,7 +18,19 @@ class _CompletedTaskState extends State<CompletedTask> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Completed Task"),
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.black,
+        ),
+        title: const Text(
+          "COMPLETED TASK",
+          style: TextStyle(
+              fontSize: 15.8, fontWeight: FontWeight.w700, color: Colors.black),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
