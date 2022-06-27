@@ -30,6 +30,7 @@ class _BottomNavState extends State<BottomNav> {
     analytics = widget.analytics;
     pages = [
       const Home(),
+      // Example(),
       const Workouts(),
       const Shop(),
       Profile(

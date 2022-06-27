@@ -1143,3 +1143,53 @@ class SpecificWorkouts {
     },
   ];
 }
+
+var dummy = [
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "mountain",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "valley",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "aeroplane",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "something",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "something",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "something",
+  }
+];
+
+var categoryList = [
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "Market",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "News",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "Games",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "Food",
+  },
+  {
+    "image": "images/mountainPose.jpg",
+    "name": "Sports",
+  }
+];

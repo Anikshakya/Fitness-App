@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitness/view/order_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -167,7 +168,72 @@ class _SearchPageState extends State<SearchPage> {
                           .snapshots(),
                   builder: (context, snapshot) {
                     return (snapshot.connectionState == ConnectionState.waiting)
-                        ? const Center(child: CircularProgressIndicator())
+                        ? Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height,
+                              child: Shimmer.fromColors(
+                                baseColor: Colors.grey.shade300,
+                                highlightColor: Colors.grey.shade400,
+                                enabled: true,
+                                child: ListView.builder(
+                                  itemBuilder: (context, __) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Container(
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          width: 60.0,
+                                          height: 60.0,
+                                        ),
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                        ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Container(
+                                                width: double.infinity,
+                                                height: 8.0,
+                                                color: Colors.white,
+                                              ),
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 2.0),
+                                              ),
+                                              Container(
+                                                width: double.infinity,
+                                                height: 8.0,
+                                                color: Colors.white,
+                                              ),
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 2.0),
+                                              ),
+                                              Container(
+                                                width: 40.0,
+                                                height: 8.0,
+                                                color: Colors.white,
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  itemCount: 9,
+                                ),
+                              ),
+                            ),
+                          )
                         : ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: snapshot.data?.docs.length,

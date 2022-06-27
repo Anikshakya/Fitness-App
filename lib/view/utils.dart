@@ -21,4 +21,18 @@ class Utils {
     messangerKey.currentState
         ?.showSnackBar(status == true ? snackBarSuccess : snackBarError);
   }
+
+  static containerShadow() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(0),
+      color: Colors.white,
+      boxShadow: const [
+        BoxShadow(
+          color: Color.fromARGB(232, 204, 204, 204),
+          offset: Offset(0, 2),
+          blurRadius: 6,
+        ),
+      ],
+    );
+  }
 }

@@ -3,8 +3,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitness/services.dart/analytics_service.dart';
 import 'package:fitness/view/order_page.dart';
+import 'package:fitness/widgets/custom_image_refresher.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class ShopHome extends StatefulWidget {
   const ShopHome({Key? key}) : super(key: key);
@@ -15,6 +17,7 @@ class ShopHome extends StatefulWidget {
 
 class _ShopHomeState extends State<ShopHome> {
   //----analytics----
+
   Future<void> _currentScreen() async {
     AnalyticsService.analytics.setCurrentScreen(screenName: "ShopingSection");
   }
@@ -25,159 +28,94 @@ class _ShopHomeState extends State<ShopHome> {
     super.initState();
   }
 
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
+  onRefresh() async {
+    await Future.delayed(const Duration(seconds: 4));
+    _refreshController.refreshCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            //-----Catagories-----
-            // padding: const EdgeInsets.all(10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text("Equipments"),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.white,
-                    onPrimary: Colors.black,
-                    // padding: const EdgeInsets.all(20)),
+    return CustomImageRefresher(
+      image: "images/gif/food.gif",
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              //-----Catagories-----
+              // padding: const EdgeInsets.all(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Equipments"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      onPrimary: Colors.black,
+                      // padding: const EdgeInsets.all(20)),
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text("Mens"),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.white,
-                    onPrimary: Colors.black,
-                    // padding: const EdgeInsets.all(20)),
+                  const SizedBox(
+                    width: 10,
                   ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text("Womens"),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.white,
-                    onPrimary: Colors.black,
-                    // padding: const EdgeInsets.all(20)),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Mens"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      onPrimary: Colors.black,
+                      // padding: const EdgeInsets.all(20)),
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text("Kids"),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.white,
-                    onPrimary: Colors.black,
-                    // padding: const EdgeInsets.all(20)),
+                  const SizedBox(
+                    width: 10,
                   ),
-                ),
-              ],
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Womens"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      onPrimary: Colors.black,
+                      // padding: const EdgeInsets.all(20)),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Kids"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      onPrimary: Colors.black,
+                      // padding: const EdgeInsets.all(20)),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          //-----first tile-----
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection("shopItems")
-                .orderBy("item_name", descending: true)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Text("No data found....");
-              } else {
-                List<QueryDocumentSnapshot<Object?>> fireStoreValueOffer =
-                    snapshot.data!.docs;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 10),
-                      child: Text(
-                        "Value Offer",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    SizedBox(
-                      height: 260,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: fireStoreValueOffer.length,
-                        itemBuilder: (context, index) {
-                          return ShopTile(
-                            pic: fireStoreValueOffer[index]["image"],
-                            brandName: fireStoreValueOffer[index]["brand"]
-                                .toString()
-                                .toUpperCase(),
-                            itemName: fireStoreValueOffer[index]["item_name"]
-                                .toString(),
-                            ratings: fireStoreValueOffer[index]["ratings"]
-                                .toString(),
-                            price: fireStoreValueOffer[index]["price"],
-                            prevPrice: fireStoreValueOffer[index]["prev_price"],
-                            ontap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: ((context) {
-                                    return OrderPage(
-                                      brand: fireStoreValueOffer[index]
-                                          ["brand"],
-                                      name: fireStoreValueOffer[index]
-                                          ["item_name"],
-                                      pic: fireStoreValueOffer[index]["image"],
-                                      ratings: fireStoreValueOffer[index]
-                                          ["ratings"],
-                                      price: fireStoreValueOffer[index]
-                                          ["price"],
-                                      delivery_fee: fireStoreValueOffer[index]
-                                          ["delivery_fee"],
-                                    );
-                                  }),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-          //-----Second  Tile--------
-          SizedBox(
-            height: 20,
-          ),
-          StreamBuilder<QuerySnapshot>(
+            SizedBox(
+              height: 10,
+            ),
+            //-----first tile-----
+            StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection("offers")
-                  .orderBy("item_name", descending: false)
+                  .collection("shopItems")
+                  .orderBy("item_name", descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Text("No data found....");
+                  return Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
+                      child: Text("sd"));
                 } else {
-                  List<QueryDocumentSnapshot<Object?>> fireStoreShopOffer =
+                  List<QueryDocumentSnapshot<Object?>> fireStoreValueOffer =
                       snapshot.data!.docs;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,7 +123,7 @@ class _ShopHomeState extends State<ShopHome> {
                       const Padding(
                         padding: EdgeInsets.only(left: 10),
                         child: Text(
-                          "World Cup Offer",
+                          "Value Offer",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w600),
                         ),
@@ -198,19 +136,19 @@ class _ShopHomeState extends State<ShopHome> {
                         child: ListView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          itemCount: fireStoreShopOffer.length,
+                          itemCount: fireStoreValueOffer.length,
                           itemBuilder: (context, index) {
-                            return Offer2(
-                              pic: fireStoreShopOffer[index]["image"],
-                              brandName: fireStoreShopOffer[index]["brand"]
+                            return ShopTile(
+                              pic: fireStoreValueOffer[index]["image"],
+                              brandName: fireStoreValueOffer[index]["brand"]
                                   .toString()
                                   .toUpperCase(),
-                              itemName: fireStoreShopOffer[index]["item_name"]
+                              itemName: fireStoreValueOffer[index]["item_name"]
                                   .toString(),
-                              ratings: fireStoreShopOffer[index]["ratings"]
+                              ratings: fireStoreValueOffer[index]["ratings"]
                                   .toString(),
-                              price: fireStoreShopOffer[index]["price"],
-                              prevPrice: fireStoreShopOffer[index]
+                              price: fireStoreValueOffer[index]["price"],
+                              prevPrice: fireStoreValueOffer[index]
                                   ["prev_price"],
                               ontap: () {
                                 Navigator.push(
@@ -218,16 +156,17 @@ class _ShopHomeState extends State<ShopHome> {
                                   MaterialPageRoute(
                                     builder: ((context) {
                                       return OrderPage(
-                                        brand: fireStoreShopOffer[index]
+                                        brand: fireStoreValueOffer[index]
                                             ["brand"],
-                                        name: fireStoreShopOffer[index]
+                                        name: fireStoreValueOffer[index]
                                             ["item_name"],
-                                        pic: fireStoreShopOffer[index]["image"],
-                                        ratings: fireStoreShopOffer[index]
+                                        pic: fireStoreValueOffer[index]
+                                            ["image"],
+                                        ratings: fireStoreValueOffer[index]
                                             ["ratings"],
-                                        price: fireStoreShopOffer[index]
+                                        price: fireStoreValueOffer[index]
                                             ["price"],
-                                        delivery_fee: fireStoreShopOffer[index]
+                                        delivery_fee: fireStoreValueOffer[index]
                                             ["delivery_fee"],
                                       );
                                     }),
@@ -241,86 +180,171 @@ class _ShopHomeState extends State<ShopHome> {
                     ],
                   );
                 }
-              }),
-          //-----third tile-----
-          SizedBox(
-            height: 30,
-          ),
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection("shopItems")
-                .orderBy("item_name", descending: false)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Text("No data found....");
-              } else {
-                List<QueryDocumentSnapshot<Object?>> fireStoreShopItems =
-                    snapshot.data!.docs;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 10),
-                      child: Text(
-                        "More for You",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+              },
+            ),
+            //-----Second  Tile--------
+            SizedBox(
+              height: 20,
+            ),
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection("offers")
+                    .orderBy("item_name", descending: false)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Text("No data found....");
+                  } else {
+                    List<QueryDocumentSnapshot<Object?>> fireStoreShopOffer =
+                        snapshot.data!.docs;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(left: 10),
+                          child: Text(
+                            "World Cup Offer",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.vertical,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: fireStoreShopItems.length,
-                        itemBuilder: (context, index) {
-                          return VerticalTile(
-                            pic: fireStoreShopItems[index]["image"],
-                            brandName: fireStoreShopItems[index]["brand"]
-                                .toString()
-                                .toUpperCase(),
-                            itemName: fireStoreShopItems[index]["item_name"]
-                                .toString(),
-                            ratings:
-                                fireStoreShopItems[index]["ratings"].toString(),
-                            price: fireStoreShopItems[index]["price"],
-                            prevPrice: fireStoreShopItems[index]["prev_price"],
-                            ontap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: ((context) {
-                                    return OrderPage(
-                                      brand: fireStoreShopItems[index]["brand"],
-                                      name: fireStoreShopItems[index]
-                                          ["item_name"],
-                                      pic: fireStoreShopItems[index]["image"],
-                                      ratings: fireStoreShopItems[index]
-                                          ["ratings"],
-                                      price: fireStoreShopItems[index]["price"],
-                                      delivery_fee: fireStoreShopItems[index]
-                                          ["delivery_fee"],
-                                    );
-                                  }),
-                                ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        SizedBox(
+                          height: 260,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: fireStoreShopOffer.length,
+                            itemBuilder: (context, index) {
+                              return Offer2(
+                                pic: fireStoreShopOffer[index]["image"],
+                                brandName: fireStoreShopOffer[index]["brand"]
+                                    .toString()
+                                    .toUpperCase(),
+                                itemName: fireStoreShopOffer[index]["item_name"]
+                                    .toString(),
+                                ratings: fireStoreShopOffer[index]["ratings"]
+                                    .toString(),
+                                price: fireStoreShopOffer[index]["price"],
+                                prevPrice: fireStoreShopOffer[index]
+                                    ["prev_price"],
+                                ontap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: ((context) {
+                                        return OrderPage(
+                                          brand: fireStoreShopOffer[index]
+                                              ["brand"],
+                                          name: fireStoreShopOffer[index]
+                                              ["item_name"],
+                                          pic: fireStoreShopOffer[index]
+                                              ["image"],
+                                          ratings: fireStoreShopOffer[index]
+                                              ["ratings"],
+                                          price: fireStoreShopOffer[index]
+                                              ["price"],
+                                          delivery_fee:
+                                              fireStoreShopOffer[index]
+                                                  ["delivery_fee"],
+                                        );
+                                      }),
+                                    ),
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                }),
+            //-----third tile-----
+            SizedBox(
+              height: 30,
+            ),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("shopItems")
+                  .orderBy("item_name", descending: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text("No data found....");
+                } else {
+                  List<QueryDocumentSnapshot<Object?>> fireStoreShopItems =
+                      snapshot.data!.docs;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 10),
+                        child: Text(
+                          "More for You",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-        ],
+                      SizedBox(
+                        height: 10,
+                      ),
+                      SizedBox(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: fireStoreShopItems.length,
+                          itemBuilder: (context, index) {
+                            return VerticalTile(
+                              pic: fireStoreShopItems[index]["image"],
+                              brandName: fireStoreShopItems[index]["brand"]
+                                  .toString()
+                                  .toUpperCase(),
+                              itemName: fireStoreShopItems[index]["item_name"]
+                                  .toString(),
+                              ratings: fireStoreShopItems[index]["ratings"]
+                                  .toString(),
+                              price: fireStoreShopItems[index]["price"],
+                              prevPrice: fireStoreShopItems[index]
+                                  ["prev_price"],
+                              ontap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: ((context) {
+                                      return OrderPage(
+                                        brand: fireStoreShopItems[index]
+                                            ["brand"],
+                                        name: fireStoreShopItems[index]
+                                            ["item_name"],
+                                        pic: fireStoreShopItems[index]["image"],
+                                        ratings: fireStoreShopItems[index]
+                                            ["ratings"],
+                                        price: fireStoreShopItems[index]
+                                            ["price"],
+                                        delivery_fee: fireStoreShopItems[index]
+                                            ["delivery_fee"],
+                                      );
+                                    }),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

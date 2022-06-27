@@ -1,4 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:fitness/widgets/custom_refresher_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Bookmarks extends StatefulWidget {
   const Bookmarks({Key? key}) : super(key: key);
@@ -26,8 +30,20 @@ class _BookmarksState extends State<Bookmarks> {
               fontSize: 15.8, fontWeight: FontWeight.w700, color: Colors.black),
         ),
       ),
-      body: const Center(
-        child: Text("comming soon"),
+      body: CustomRefreshWidget(
+        widget: const Padding(
+          padding: EdgeInsets.only(top: 40),
+          child: SpinKitThreeBounce(
+            size: 25,
+            color: Colors.orangeAccent,
+          ),
+        ),
+        onRefresh: () {
+          return Future.delayed(Duration(seconds: 4));
+        },
+        child: const Center(
+          child: Text("Hello"),
+        ),
       ),
     );
   }

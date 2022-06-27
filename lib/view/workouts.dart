@@ -6,6 +6,9 @@ import 'package:fitness/view/bookmarks.dart';
 import 'package:fitness/view/workout_data.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness/widgets/custom_refresher_widget.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Workouts extends StatefulWidget {
   const Workouts({Key? key}) : super(key: key);
@@ -55,6 +58,14 @@ class _WorkoutsState extends State<Workouts> {
         screenName: "workout_screen", screenClassOverride: "workout_screen");
   }
 
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
+  Future onRefresh() async {
+    Future.delayed(const Duration(seconds: 4));
+    _refreshController.refreshCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,545 +82,579 @@ class _WorkoutsState extends State<Workouts> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //----Fitness Exercises---
-              const SizedBox(
-                height: 8,
-              ),
-              Container(
-                // height: 252,
-                decoration: containerShadow(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 8, top: 14),
-                      child: Text(
-                        "FITNESS EXERCISES",
-                        style: TextStyle(
-                          fontSize: 15.6,
-                          fontWeight: FontWeight.w800,
+      body: CustomRefreshWidget(
+        onRefresh: onRefresh,
+        widget: const Padding(
+          padding: EdgeInsets.only(top: 30),
+          child: Center(
+              child: SpinKitThreeBounce(
+            color: Colors.orangeAccent,
+            size: 26,
+          )),
+        ), // const LoadingAnimation(),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                //----Fitness Exercises---
+
+                Container(
+                  // height: 252,
+                  decoration: containerShadow(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8, top: 14),
+                        child: Text(
+                          "FITNESS EXERCISES",
+                          style: TextStyle(
+                            fontSize: 15.6,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: fitnessExercise.length,
-                        itemBuilder: (context, index) {
-                          return FitnessExerciseTile(
-                            pic: fitnessExercise[index]["image"].toString(),
-                            name: fitnessExercise[index]["name"]
-                                .toString()
-                                .toUpperCase(),
-                            desc: fitnessExercise[index]["desc"].toString(),
-                            ontap: () {
-                              sendWorkoutAnalytics(
-                                  fitnessExercise[index]["name"].toString());
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (context) => WorkoutDataList(
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      SizedBox(
+                        height: 200,
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            scrollbarTheme: ScrollbarThemeData(
+                                thumbColor:
+                                    MaterialStateProperty.all(Colors.teal),
+                                trackColor:
+                                    MaterialStateProperty.all(Colors.black),
+                                trackBorderColor:
+                                    MaterialStateProperty.all(Colors.black)),
+                          ),
+                          child: Scrollbar(
+                            thickness: 2,
+                            isAlwaysShown: true,
+                            radius: const Radius.circular(10),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: fitnessExercise.length,
+                              itemBuilder: (context, index) {
+                                return FitnessExerciseTile(
+                                  pic: fitnessExercise[index]["image"]
+                                      .toString(),
+                                  name: fitnessExercise[index]["name"]
+                                      .toString()
+                                      .toUpperCase(),
+                                  desc:
+                                      fitnessExercise[index]["desc"].toString(),
+                                  ontap: () {
+                                    sendWorkoutAnalytics(fitnessExercise[index]
+                                            ["name"]
+                                        .toString());
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => WorkoutDataList(
                                           title: fitnessExercise[index]["name"]
                                               .toString(),
                                           url: fitnessExercise[index]["image"]
                                               .toString(),
-                                        )),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-
-              //-----Workouts grid list---
-              Container(
-                height: 434,
-                decoration: containerShadow(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 8, top: 13, bottom: 10, right: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            "SPECIFIC WORKOUTS",
-                            style: TextStyle(
-                              fontSize: 15.8,
-                              fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ),
-                          Text(
-                            "Choose a Workout",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+
+                //-----Workouts grid list---
+                Container(
+                  height: 434,
+                  decoration: containerShadow(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 8, top: 13, bottom: 10, right: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: const [
+                            Text(
+                              "SPECIFIC WORKOUTS",
+                              style: TextStyle(
+                                fontSize: 15.8,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              "Choose a Workout",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      //----workout list row 1-----
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              sendWorkoutAnalytics("Arms");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const WorkoutDataList(
+                                      title: "Arms", url: "images/arms.jpg"),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              //--Arms--
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Image.asset(
+                                        "images/arms.jpg",
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(83, 0, 0, 0),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 15, top: 75),
+                                      child: Text(
+                                        "ARM",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          //---butts & legs----
+                          GestureDetector(
+                            onTap: () {
+                              sendWorkoutAnalytics("Butt & Legs");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const WorkoutDataList(
+                                      title: "Butt & Legs",
+                                      url: "images/legs&butt.jpg"),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Image.asset(
+                                        "images/legs&butt.jpg",
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(83, 0, 0, 0),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 20, top: 75),
+                                      child: Text(
+                                        "BUTT & LEG",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    //----workout list row 1-----
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            sendWorkoutAnalytics("Arms");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WorkoutDataList(
-                                    title: "Arms", url: "images/arms.jpg"),
+                      const SizedBox(
+                        height: 6,
+                      ),
+                      //--work out grid list row 2---
+                      Row(
+                        children: [
+                          //----ABS----
+                          GestureDetector(
+                            onTap: () {
+                              sendWorkoutAnalytics("Abs");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const WorkoutDataList(
+                                      title: "Abs", url: "images/abs.jpg"),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Image.asset(
+                                        "images/abs.jpg",
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(83, 0, 0, 0),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 20, top: 75),
+                                      child: Text(
+                                        "ABS",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            //--Arms--
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset(
-                                      "images/arms.jpg",
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(83, 0, 0, 0),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 15, top: 75),
-                                    child: Text(
-                                      "ARM",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                        //---butts & legs----
-                        GestureDetector(
-                          onTap: () {
-                            sendWorkoutAnalytics("Butt & Legs");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WorkoutDataList(
-                                    title: "Butt & Legs",
-                                    url: "images/legs&butt.jpg"),
+                          //----Chest-----
+                          GestureDetector(
+                            onTap: () {
+                              sendWorkoutAnalytics("Chest");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const WorkoutDataList(
+                                      title: "Chest", url: "images/chest.jpg"),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Image.asset(
+                                        "images/chest.jpg",
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(83, 0, 0, 0),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 15, top: 75),
+                                      child: Text(
+                                        "CHEST",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset(
-                                      "images/legs&butt.jpg",
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(83, 0, 0, 0),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 20, top: 75),
-                                    child: Text(
-                                      "BUTT & LEG",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    //--work out grid list row 2---
-                    Row(
-                      children: [
-                        //----ABS----
-                        GestureDetector(
-                          onTap: () {
-                            sendWorkoutAnalytics("Abs");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WorkoutDataList(
-                                    title: "Abs", url: "images/abs.jpg"),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 6,
+                      ),
+                      //--workout grid list row 3---
+                      Row(
+                        children: [
+                          //----Shoulders & back-----
+                          GestureDetector(
+                            onTap: () {
+                              sendWorkoutAnalytics("Shoulder & Back");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const WorkoutDataList(
+                                      title: "Shoulder & Back",
+                                      url: "images/shoulder&back.jpg"),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Image.asset(
+                                        "images/shoulder&back.jpg",
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 120,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.1,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(83, 0, 0, 0),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 15, top: 75),
+                                      child: Text(
+                                        "SHOULDER & BACK",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset(
-                                      "images/abs.jpg",
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(83, 0, 0, 0),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 20, top: 75),
-                                    child: Text(
-                                      "ABS",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                        //----Chest-----
-                        GestureDetector(
-                          onTap: () {
-                            sendWorkoutAnalytics("Chest");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WorkoutDataList(
-                                    title: "Chest", url: "images/chest.jpg"),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset(
-                                      "images/chest.jpg",
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(83, 0, 0, 0),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 15, top: 75),
-                                    child: Text(
-                                      "CHEST",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    //--workout grid list row 3---
-                    Row(
-                      children: [
-                        //----Shoulders & back-----
-                        GestureDetector(
-                          onTap: () {
-                            sendWorkoutAnalytics("Shoulder & Back");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WorkoutDataList(
-                                    title: "Shoulder & Back",
-                                    url: "images/shoulder&back.jpg"),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset(
-                                      "images/shoulder&back.jpg",
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 120,
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(83, 0, 0, 0),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 15, top: 75),
-                                    child: Text(
-                                      "SHOULDER & BACK",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 6,
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: containerShadow(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "DISCOVER ALL EXERCISES & WORKOUTS",
-                        style: TextStyle(
-                          fontSize: 15.8,
-                          fontWeight: FontWeight.w800,
+                const SizedBox(
+                  height: 6,
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: containerShadow(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "DISCOVER ALL EXERCISES & WORKOUTS",
+                          style: TextStyle(
+                            fontSize: 15.8,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: GestureDetector(
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Bookmarks()),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              const Icon(Icons.bookmark),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 25),
+                                    child: Text("Bookmarks"),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 25),
+                                    child: Text("worouts"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Bookmarks()),
+                                builder: ((context) => const AllExercises())),
                           );
                         },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.bookmark),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.only(left: 25),
-                                  child: Text("Bookmarks"),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 25),
-                                  child: Text("worouts"),
-                                ),
-                              ],
-                            ),
-                          ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.bookmark),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 25),
+                                    child: Text("All Exercises"),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 25),
+                                    child: Text("worouts"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: ((context) => const AllExercises())),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.bookmark),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.only(left: 25),
-                                  child: Text("All Exercises"),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 25),
-                                  child: Text("worouts"),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      const SizedBox(
+                        height: 8,
                       ),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: ((context) => const AllWorkouts())),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.bookmark),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.only(left: 25),
-                                  child: Text("All Workouts"),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 25),
-                                  child: Text("worouts"),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              //----Random----
-              Container(
-                decoration: containerShadow(),
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: workoutList.length,
-                    itemBuilder: (context, index) {
-                      return WorkoutList(
-                        img: workoutList[index]["url"].toString(),
-                        txt: workoutList[index]["name"].toString(),
-                        txt2: workoutList[index]["txt"].toString(),
-                        ontap: () {
-                          Navigator.of(context).push(
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
                             MaterialPageRoute(
-                              builder: ((context) => WorkoutDataList(
-                                    url: workoutList[index]["url"].toString(),
-                                    title: workoutList[index]["name"],
-                                  )),
-                            ),
+                                builder: ((context) => const AllWorkouts())),
                           );
                         },
-                      );
-                    }),
-              ),
-            ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.bookmark),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 25),
+                                    child: Text("All Workouts"),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 25),
+                                    child: Text("worouts"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                //----Random----
+                Container(
+                  decoration: containerShadow(),
+                  child: ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: workoutList.length,
+                      itemBuilder: (context, index) {
+                        return WorkoutList(
+                          img: workoutList[index]["url"].toString(),
+                          txt: workoutList[index]["name"].toString(),
+                          txt2: workoutList[index]["txt"].toString(),
+                          ontap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: ((context) => WorkoutDataList(
+                                      url: workoutList[index]["url"].toString(),
+                                      title: workoutList[index]["name"],
+                                    )),
+                              ),
+                            );
+                          },
+                        );
+                      }),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,9 +1,13 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, prefer_adjacent_string_concatenation, prefer_typing_uninitialized_variables
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:fitness/all_data/all_workout_data.dart';
 import 'package:fitness/google_sign_in.dart';
 import 'package:fitness/services.dart/analytics_service.dart';
+import 'package:fitness/view/category_views/category1.dart';
+import 'package:fitness/view/category_views/category2.dart';
+import 'package:fitness/view/category_views/category3.dart';
 import 'package:fitness/view/login_page.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:fitness/view/edit_profile.dart';
@@ -32,6 +36,21 @@ class _ProfileState extends State<Profile> {
   var box = GetStorage();
   final user = FirebaseAuth.instance.currentUser;
 
+  //-----Container decorartion-----
+  containerDecoration() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(2),
+      color: Colors.white,
+      boxShadow: const [
+        BoxShadow(
+          color: Color.fromARGB(232, 186, 187, 187),
+          offset: Offset(2, 2),
+          blurRadius: 3,
+        ),
+      ],
+    );
+  }
+
   //----analytics----
   Future<void> _currentScreenAnalytics() async {
     AnalyticsService.analytics.setCurrentScreen(
@@ -43,6 +62,33 @@ class _ProfileState extends State<Profile> {
       'user_email': user?.email,
       'user_id': user?.uid,
     });
+  }
+
+  //-----for Category-----
+  int catListColor = 0xfff5f5f5;
+  int onTapCatListColor = 0xffffffff;
+  int? textSize;
+  var categoryIndex = 0;
+  var option = "Market";
+
+  switchCategory() {
+    switch (option) {
+      case "Market":
+        return Category1(name: option);
+
+      case "News":
+        return Category2(name: option);
+
+      case "Games":
+        return Category3(name: option);
+
+      case "Food":
+        return Category1(name: option);
+
+      case "Sports":
+        return Category1(name: option);
+      default:
+    }
   }
 
   @override
@@ -130,24 +176,14 @@ class _ProfileState extends State<Profile> {
       ),
 
       //-----Body--------
-      body: SingleChildScrollView(
-        child: SafeArea(
+      body: Stack(children: [
+        SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.only(bottom: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(2),
-                  color: Colors.white,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromARGB(232, 186, 187, 187),
-                      offset: Offset(2, 2),
-                      blurRadius: 3,
-                    ),
-                  ],
-                ),
+                decoration: containerDecoration(),
                 child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection("users")
@@ -170,32 +206,32 @@ class _ProfileState extends State<Profile> {
                                   GestureDetector(
                                     onTap: () {
                                       showDialog(
-                                          context: context,
-                                          builder: (context) => GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: InteractiveViewer(
-                                                  child: AlertDialog(
-                                                    titlePadding:
-                                                        const EdgeInsets.all(0),
-                                                    title: fireStoreItems[0][
-                                                                'profilePhoto'] !=
-                                                            ""
-                                                        ? CachedNetworkImage(
-                                                            imageUrl:
-                                                                fireStoreItems[
-                                                                        0][
-                                                                    'profilePhoto'],
-                                                            fit: BoxFit.cover,
-                                                          )
-                                                        : Image.asset(
-                                                            "images/profile.jpg",
-                                                            fit: BoxFit.cover,
-                                                          ),
-                                                  ),
-                                                ),
-                                              ));
+                                        context: context,
+                                        builder: (context) => GestureDetector(
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: InteractiveViewer(
+                                            child: AlertDialog(
+                                              titlePadding:
+                                                  const EdgeInsets.all(0),
+                                              title: fireStoreItems[0]
+                                                          ['profilePhoto'] !=
+                                                      ""
+                                                  ? CachedNetworkImage(
+                                                      imageUrl:
+                                                          fireStoreItems[0]
+                                                              ['profilePhoto'],
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : Image.asset(
+                                                      "images/profile.jpg",
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -347,17 +383,16 @@ class _ProfileState extends State<Profile> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                              builder: (context) => EditProfile(
-                                                    editName: fireStoreItems[0]
-                                                        ['name'],
-                                                    editContact:
-                                                        fireStoreItems[0]
-                                                            ['contact'],
-                                                    editBio: fireStoreItems[0]
-                                                        ['bio'],
-                                                  )));
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => EditProfile(
+                                            editName: fireStoreItems[0]['name'],
+                                            editContact: fireStoreItems[0]
+                                                ['contact'],
+                                            editBio: fireStoreItems[0]['bio'],
+                                          ),
+                                        ),
+                                      );
                                     },
                                     child: Row(
                                       children: const [
@@ -380,279 +415,136 @@ class _ProfileState extends State<Profile> {
                       }
                     }),
               ),
-
               const SizedBox(
                 height: 10,
               ),
-              //------Grid View------
+              //-----Category Section-----
               Container(
-                padding: const EdgeInsets.only(bottom: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(2),
-                  color: Colors.white,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromARGB(232, 186, 187, 187),
-                      offset: Offset(2, 2),
-                      blurRadius: 3,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                decoration: containerDecoration(),
+                child: Row(
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 10, top: 12, bottom: 12),
-                      child: Text(
-                        "Favourites",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                    SingleChildScrollView(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.25,
+                        height: MediaQuery.of(context).size.height / 2,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          itemCount: categoryList.length,
+                          itemBuilder: (context, index) {
+                            var data = categoryList[index];
+                            return CategoryListTile(
+                              onTap: () {
+                                setState(() {
+                                  option = data["name"].toString();
+                                  categoryIndex = index;
+                                });
+                              },
+                              image: data["image"],
+                              name: data["name"],
+                              color: categoryIndex == index
+                                  ? onTapCatListColor
+                                  : catListColor,
+                              textSize:
+                                  categoryIndex == index ? textSize : 12.0,
+                              textColor: categoryIndex == index
+                                  ? "0xff000000"
+                                  : "0xff808080",
+                            );
+                          },
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height / 1.91,
-                      child: GridView.count(
-                        primary: false,
-                        // padding: const EdgeInsets.all(20),
-                        crossAxisSpacing: 3,
-                        mainAxisSpacing: 3,
-                        crossAxisCount: 3,
-                        children: <Widget>[
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.asset("images/mountainPose.jpg",
-                                    fit: BoxFit.cover,
-                                    height: MediaQuery.of(context).size.height,
-                                    width: MediaQuery.of(context).size.width),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  color: const Color.fromARGB(96, 0, 0, 0),
-                                ),
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.only(top: 80, left: 4),
-                                      child: Text(
-                                        "Fitness",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 2, left: 4),
-                                      child: Text(
-                                        "Nature",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.asset("images/meditation.jpg",
-                                    fit: BoxFit.cover,
-                                    height: MediaQuery.of(context).size.height,
-                                    width: MediaQuery.of(context).size.width),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  color: const Color.fromARGB(96, 0, 0, 0),
-                                ),
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.only(top: 80, left: 4),
-                                      child: Text(
-                                        "Meditation",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 2, left: 4),
-                                      child: Text(
-                                        "Calm",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.asset("images/workout1.jpg",
-                                    fit: BoxFit.cover,
-                                    height: MediaQuery.of(context).size.height,
-                                    width: MediaQuery.of(context).size.width),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  color: const Color.fromARGB(96, 0, 0, 0),
-                                ),
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.only(top: 80, left: 4),
-                                      child: Text(
-                                        "Fitness",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 2, left: 4),
-                                      child: Text(
-                                        "Warmup",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.asset("images/Stretching.jpg",
-                                    fit: BoxFit.cover,
-                                    height: MediaQuery.of(context).size.height,
-                                    width: MediaQuery.of(context).size.width),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  color: const Color.fromARGB(96, 0, 0, 0),
-                                ),
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.only(top: 80, left: 4),
-                                      child: Text(
-                                        "Fitness",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 2, left: 4),
-                                      child: Text(
-                                        "Calm",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.asset("images/warmup1.jpg",
-                                    fit: BoxFit.cover,
-                                    height: MediaQuery.of(context).size.height,
-                                    width: MediaQuery.of(context).size.width),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  color: const Color.fromARGB(96, 0, 0, 0),
-                                ),
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.only(top: 80, left: 4),
-                                      child: Text(
-                                        "Fitness",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 2, left: 4),
-                                      child: Text(
-                                        "Calm",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    Container(
+                      color: const Color(0xffffffff),
+                      width: MediaQuery.of(context).size.width * 0.75,
+                      height: MediaQuery.of(context).size.height / 2,
+                      child: switchCategory(),
                     ),
                   ],
                 ),
-              ),
+              )
             ],
           ),
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.75,
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 40, top: 5, right: 40, bottom: 5),
+              child: ElevatedButton(
+                onPressed: () {},
+                child: const Text(
+                  "View All (90)",
+                ),
+                style: ElevatedButton.styleFrom(
+                    fixedSize: const Size(20, 0),
+                    elevation: 0.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    textStyle: const TextStyle(
+                        fontSize: 14.5, fontWeight: FontWeight.w300),
+                    primary: const Color.fromARGB(255, 41, 41, 41),
+                    onPrimary: const Color.fromARGB(255, 230, 230, 230)),
+              ),
+            ),
+          ),
+        )
+      ]),
+    );
+  }
+}
+
+class CategoryListTile extends StatefulWidget {
+  final image, name, color, textSize, textColor;
+  final VoidCallback? onTap;
+  const CategoryListTile(
+      {Key? key,
+      this.image,
+      this.name,
+      this.onTap,
+      this.color,
+      this.textSize,
+      this.textColor})
+      : super(key: key);
+
+  @override
+  State<CategoryListTile> createState() => _CategoryListTileState();
+}
+
+class _CategoryListTileState extends State<CategoryListTile> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        color: Color(widget.color),
+        padding:
+            const EdgeInsets.only(left: 10, right: 10, top: 30, bottom: 30),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                widget.image,
+                fit: BoxFit.cover,
+                height: 50,
+                width: 50,
+              ),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            Text(
+              widget.name,
+              style: TextStyle(
+                  fontSize: widget.textSize,
+                  color: Color(int.parse(widget.textColor))),
+            ),
+          ],
         ),
       ),
     );

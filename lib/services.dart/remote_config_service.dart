@@ -6,7 +6,7 @@ class RemoteConfigService {
   Future<FirebaseRemoteConfig> setupRemoteConfig() async {
     await remoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: const Duration(seconds: 20),
-      minimumFetchInterval: const Duration(seconds: 1),
+      minimumFetchInterval: const Duration(seconds: 20),
     ));
     await remoteConfig.fetchAndActivate();
 
